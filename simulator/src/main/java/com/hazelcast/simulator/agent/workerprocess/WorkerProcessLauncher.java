@@ -216,9 +216,11 @@ public class WorkerProcessLauncher {
 
     private String getClasspath(File workerHome) {
         String simulatorHome = getSimulatorHome().getAbsolutePath();
-        String classpath = new File(getSessionDirectory(), "lib/*").getAbsolutePath()
-                + CLASSPATH_SEPARATOR + workerHome.getAbsolutePath() + "/upload/*"
-                + CLASSPATH_SEPARATOR + simulatorHome + "/user-lib/*"
+        String classpath = new File(getSessionDirectory(), "lib/*").getAbsolutePath();
+        if (parameters.get("VERSION_SPEC").equals("bringmyown")) {
+            classpath += CLASSPATH_SEPARATOR + workerHome.getAbsolutePath() + "/upload/*";
+        }
+        classpath += CLASSPATH_SEPARATOR + simulatorHome + "/user-lib/*"
                 + uploadDirToClassPath(workerHome)
                 + CLASSPATH_SEPARATOR + CLASSPATH;
 
@@ -235,6 +237,13 @@ public class WorkerProcessLauncher {
             classpath += CLASSPATH_SEPARATOR + simulatorHome + "/drivers/driver-hazelcast4/*";
         } else {
             classpath += CLASSPATH_SEPARATOR + simulatorHome + "/drivers/driver-" + driver + "/*";
+        }
+
+        // This will add all upload directory to classpath in case bringmyown
+        // option isn't used but since it will be after drivers the JVM will use
+        // correct JARs
+        if (!parameters.get("VERSION_SPEC").equals("bringmyown")) {
+            classpath += CLASSPATH_SEPARATOR + workerHome.getAbsolutePath() + "/upload/*";
         }
 
         return classpath;
